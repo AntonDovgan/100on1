@@ -1,0 +1,21 @@
+{
+  "name": "100on1",
+  "private": true,
+  "scripts": {
+    "dev": "concurrently \"pnpm --filter server dev\" \"pnpm --filter client dev\"",
+    "build": "pnpm --filter client exec -- npx vite build",
+    "start": "pnpm --filter server exec -- npx tsx src/index.ts",
+    "serve": "pnpm build && pnpm start",
+    "tunnel": "pnpm build && concurrently \"pnpm start\" \"sleep 2 && cloudflared tunnel --url http://localhost:3001\""
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2",
+    "typescript": "^5.7.3"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "esbuild"
+    ]
+  },
+  "packageManager": "pnpm@10.28.2+sha512.41872f037ad22f7348e3b1debbaf7e867cfd448f2726d9cf74c08f19507c31d2c8e7a11525b983febc2df640b5438dee6023ebb1f84ed43cc2d654d2bc326264"
+}

@@ -1,0 +1,118 @@
+{
+  "rounds": [
+    {
+      "id": "q1",
+      "text": "Что женщины больше всего любят получать в подарок на 8 Марта?",
+      "roundType": "simple",
+      "answers": [
+        { "id": 1, "text": "Цветы", "points": 40, "isRevealed": false },
+        { "id": 2, "text": "Духи", "points": 20, "isRevealed": false },
+        { "id": 3, "text": "Конфеты / Шоколад", "points": 15, "isRevealed": false },
+        { "id": 4, "text": "Украшения", "points": 10, "isRevealed": false },
+        { "id": 5, "text": "Деньги", "points": 8, "isRevealed": false },
+        { "id": 6, "text": "Внимание и заботу", "points": 7, "isRevealed": false }
+      ]
+    },
+    {
+      "id": "q2",
+      "text": "Какой комплимент женщина слышит чаще всего?",
+      "roundType": "double",
+      "answers": [
+        { "id": 1, "text": "Ты красивая", "points": 35, "isRevealed": false },
+        { "id": 2, "text": "Тебе идёт это платье", "points": 20, "isRevealed": false },
+        { "id": 3, "text": "У тебя красивые глаза", "points": 15, "isRevealed": false },
+        { "id": 4, "text": "Ты хорошо выглядишь", "points": 12, "isRevealed": false },
+        { "id": 5, "text": "Ты похудела?", "points": 10, "isRevealed": false },
+        { "id": 6, "text": "Ты классно готовишь", "points": 8, "isRevealed": false }
+      ]
+    },
+    {
+      "id": "q3",
+      "text": "Что мужчины забывают сделать чаще всего?",
+      "roundType": "triple",
+      "answers": [
+        { "id": 1, "text": "Помыть посуду", "points": 30, "isRevealed": false },
+        { "id": 2, "text": "Вынести мусор", "points": 25, "isRevealed": false },
+        { "id": 3, "text": "Купить подарок на праздник", "points": 18, "isRevealed": false },
+        { "id": 4, "text": "Позвонить маме", "points": 12, "isRevealed": false },
+        { "id": 5, "text": "Опустить крышку унитаза", "points": 10, "isRevealed": false },
+        { "id": 6, "text": "Сказать комплимент", "points": 5, "isRevealed": false }
+      ]
+    },
+    {
+      "id": "q4",
+      "text": "Назовите самый романтичный город мира.",
+      "roundType": "reverse",
+      "answers": [
+        { "id": 1, "text": "Париж", "points": 15, "isRevealed": false },
+        { "id": 2, "text": "Венеция", "points": 30, "isRevealed": false },
+        { "id": 3, "text": "Рим", "points": 60, "isRevealed": false },
+        { "id": 4, "text": "Прага", "points": 120, "isRevealed": false },
+        { "id": 5, "text": "Барселона", "points": 180, "isRevealed": false },
+        { "id": 6, "text": "Санторини", "points": 240, "isRevealed": false }
+      ]
+    }
+  ],
+  "bigGame": [
+    {
+      "id": "bg1",
+      "text": "Назовите весенний цветок.",
+      "answers": [
+        { "text": "Тюльпан", "points": 38 },
+        { "text": "Подснежник", "points": 22 },
+        { "text": "Нарцисс", "points": 15 },
+        { "text": "Мимоза", "points": 12 },
+        { "text": "Крокус", "points": 8 },
+        { "text": "Ландыш", "points": 5 }
+      ]
+    },
+    {
+      "id": "bg2",
+      "text": "Что женщина берёт с собой в сумочку?",
+      "answers": [
+        { "text": "Телефон", "points": 35 },
+        { "text": "Кошелёк", "points": 25 },
+        { "text": "Помаду", "points": 18 },
+        { "text": "Зеркальце", "points": 12 },
+        { "text": "Ключи", "points": 7 },
+        { "text": "Салфетки", "points": 3 }
+      ]
+    },
+    {
+      "id": "bg3",
+      "text": "Назовите известную женщину-актрису.",
+      "answers": [
+        { "text": "Анджелина Джоли", "points": 30 },
+        { "text": "Скарлетт Йоханссон", "points": 22 },
+        { "text": "Мэрилин Монро", "points": 18 },
+        { "text": "Одри Хепбёрн", "points": 15 },
+        { "text": "Джулия Робертс", "points": 10 },
+        { "text": "Натали Портман", "points": 5 }
+      ]
+    },
+    {
+      "id": "bg4",
+      "text": "Что дарят на первое свидание?",
+      "answers": [
+        { "text": "Цветы", "points": 45 },
+        { "text": "Конфеты", "points": 20 },
+        { "text": "Мягкую игрушку", "points": 15 },
+        { "text": "Духи", "points": 10 },
+        { "text": "Комплимент", "points": 7 },
+        { "text": "Улыбку", "points": 3 }
+      ]
+    },
+    {
+      "id": "bg5",
+      "text": "Назовите женскую профессию, которая считается самой престижной.",
+      "answers": [
+        { "text": "Врач", "points": 30 },
+        { "text": "Юрист / Адвокат", "points": 25 },
+        { "text": "Бизнесвумен", "points": 18 },
+        { "text": "Модель", "points": 12 },
+        { "text": "Учитель", "points": 10 },
+        { "text": "Стилист / Дизайнер", "points": 5 }
+      ]
+    }
+  ]
+}
