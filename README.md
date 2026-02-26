@@ -70,9 +70,10 @@ Starts the server (port 3001) and client dev server (port 5173) with hot reload:
 pnpm dev
 ```
 
-- Players: `http://localhost:5173`
-- Admin panel: `http://localhost:5173/admin`
-- Public display (TV/projector): `http://localhost:5173/display/<roomId>` (room ID shown after creating a room)
+- Players: `http://localhost:5173` (join → select room → play)
+- Admin panel: `http://localhost:5173/admin` (login → create rooms → manage)
+- Room lobby: `http://localhost:5173/room/<roomId>/lobby` (direct link to a room)
+- Public display (TV/projector): `http://localhost:5173/display/<roomId>` (room ID shown in URL after entering a room)
 
 ### Production
 
@@ -101,9 +102,9 @@ This builds the client, starts the server, and creates a public tunnel. Share th
 
 | Role | Access | Description |
 |------|--------|-------------|
-| **Player** | Open the game link | Enters a name, selects a room from the list, plays |
-| **Admin (Host)** | `/admin` route | Creates rooms, manages players, controls the game flow |
-| **Public Display** | `/display/:roomId` route | Spectator view for a projector/TV — shows a specific room's game |
+| **Player** | `/` → `/rooms` → `/room/:roomId/lobby` | Enters a name, selects a room from the list, plays. Each room has a unique URL |
+| **Admin (Host)** | `/admin` → `/admin/rooms` → `/admin/room/:roomId/lobby` | Creates rooms, manages players, controls the game flow |
+| **Public Display** | `/display/:roomId` | Spectator view for a projector/TV — shows a specific room's game |
 
 > **Default admin password:** `admin8march` (change via `ADMIN_PASSWORD` env var before the event).
 
@@ -262,7 +263,7 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 ├── client/                     # React frontend
 │   └── src/
 │       ├── main.tsx            # React entry point
-│       ├── App.tsx             # Router (10 routes)
+│       ├── App.tsx             # Router (14 routes with room-specific URLs)
 │       ├── socket.ts           # Socket.IO client singleton
 │       ├── contexts/
 │       │   ├── GameContext.tsx  # Game state provider (room-aware)
@@ -284,6 +285,7 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 │       │       ├── AdminLobbyPage.tsx     # Team management + player kick
 │       │       └── AdminGamePage.tsx      # Game control panel
 │       ├── components/
+│       │   ├── RoomGuard.tsx       # Auto-join room from URL, password prompt
 │       │   ├── game/
 │       │   │   ├── AnswerBoard.tsx    # Answer grid with flip-reveal
 │       │   │   ├── AnswerSlot.tsx     # Single answer slot (hidden/revealed)

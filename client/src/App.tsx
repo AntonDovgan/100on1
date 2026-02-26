@@ -1,6 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { usePlayer } from './contexts/PlayerContext.js';
-import { useRoom } from './contexts/RoomContext.js';
 import { RoomGuard } from './components/RoomGuard.js';
 import { JoinPage } from './pages/player/JoinPage.js';
 import { RoomListPage } from './pages/player/RoomListPage.js';

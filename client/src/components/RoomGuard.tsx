@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useRoom } from '../contexts/RoomContext.js';
 
@@ -18,11 +18,21 @@ export function RoomGuard({ children, isAdmin = false }: RoomGuardProps) {
   const [errorMsg, setErrorMsg] = useState('');
   const [password, setPassword] = useState('');
 
+  // Track status via ref so the effect can detect kick/deletion without stale closure
+  const statusRef = useRef(status);
+  statusRef.current = status;
+
   useEffect(() => {
     if (!roomId) return;
 
     if (currentRoomId === roomId) {
       setStatus('ready');
+      return;
+    }
+
+    // If we were already 'ready' but lost the room (kicked/deleted), redirect
+    if (statusRef.current === 'ready') {
+      navigate(isAdmin ? '/admin/rooms' : '/rooms', { replace: true });
       return;
     }
 
