@@ -33,6 +33,8 @@ export interface ClientToServerEvents {
   'admin:revealReverseAnswer': (data: { answerId: number; teamId: TeamId }) => void;
   'admin:overrideScore': (data: { teamId: TeamId; score: number }) => void;
   'admin:resetGame': () => void;
+
+  'game:requestState': () => void;
 }
 
 export interface ServerToClientEvents {

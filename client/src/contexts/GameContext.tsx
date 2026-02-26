@@ -32,6 +32,8 @@ export function GameProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     socket.on('game:state', setState);
+    // Request current state in case we missed the initial emit (race condition)
+    socket.emit('game:requestState');
     return () => { socket.off('game:state', setState); };
   }, []);
 

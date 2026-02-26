@@ -29,6 +29,11 @@ export function registerHandlers(io: IOServer) {
     // Send current state on connect
     socket.emit('game:state', gameState.getState());
 
+    // --- Request State (for display page / late-connecting clients) ---
+    socket.on('game:requestState', () => {
+      socket.emit('game:state', gameState.getState());
+    });
+
     // --- Player Registration ---
     socket.on('player:register', (data, callback) => {
       const name = data.name.trim();
