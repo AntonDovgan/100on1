@@ -1,6 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { usePlayer } from './contexts/PlayerContext.js';
 import { useRoom } from './contexts/RoomContext.js';
+import { RoomGuard } from './components/RoomGuard.js';
 import { JoinPage } from './pages/player/JoinPage.js';
 import { RoomListPage } from './pages/player/RoomListPage.js';
 import { LobbyPage } from './pages/player/LobbyPage.js';
@@ -15,7 +16,6 @@ import { FestiveBackground } from './components/layout/FestiveBackground.js';
 
 export function App() {
   const { playerId, isAdmin } = usePlayer();
-  const { currentRoomId } = useRoom();
 
   return (
     <div className="min-h-full relative">
@@ -25,9 +25,14 @@ export function App() {
           {/* Player routes */}
           <Route path="/" element={playerId ? <Navigate to="/rooms" /> : <JoinPage />} />
           <Route path="/rooms" element={playerId ? <RoomListPage /> : <Navigate to="/" />} />
-          <Route path="/lobby" element={playerId && currentRoomId ? <LobbyPage /> : <Navigate to={playerId ? '/rooms' : '/'} />} />
-          <Route path="/game" element={playerId && currentRoomId ? <GamePage /> : <Navigate to={playerId ? '/rooms' : '/'} />} />
-          <Route path="/results" element={playerId && currentRoomId ? <ResultsPage /> : <Navigate to={playerId ? '/rooms' : '/'} />} />
+          <Route path="/room/:roomId/lobby" element={playerId ? <RoomGuard><LobbyPage /></RoomGuard> : <Navigate to="/" />} />
+          <Route path="/room/:roomId/game" element={playerId ? <RoomGuard><GamePage /></RoomGuard> : <Navigate to="/" />} />
+          <Route path="/room/:roomId/results" element={playerId ? <RoomGuard><ResultsPage /></RoomGuard> : <Navigate to="/" />} />
+
+          {/* Backward-compat: old URLs redirect to room list */}
+          <Route path="/lobby" element={<Navigate to="/rooms" replace />} />
+          <Route path="/game" element={<Navigate to="/rooms" replace />} />
+          <Route path="/results" element={<Navigate to="/rooms" replace />} />
 
           {/* Public display (projector/TV) */}
           <Route path="/display/:roomId" element={<PublicDisplayPage />} />
@@ -35,8 +40,12 @@ export function App() {
           {/* Admin routes */}
           <Route path="/admin" element={isAdmin ? <Navigate to="/admin/rooms" /> : <AdminLoginPage />} />
           <Route path="/admin/rooms" element={isAdmin ? <AdminRoomListPage /> : <Navigate to="/admin" />} />
-          <Route path="/admin/lobby" element={isAdmin && currentRoomId ? <AdminLobbyPage /> : <Navigate to={isAdmin ? '/admin/rooms' : '/admin'} />} />
-          <Route path="/admin/game" element={isAdmin && currentRoomId ? <AdminGamePage /> : <Navigate to={isAdmin ? '/admin/rooms' : '/admin'} />} />
+          <Route path="/admin/room/:roomId/lobby" element={isAdmin ? <RoomGuard isAdmin><AdminLobbyPage /></RoomGuard> : <Navigate to="/admin" />} />
+          <Route path="/admin/room/:roomId/game" element={isAdmin ? <RoomGuard isAdmin><AdminGamePage /></RoomGuard> : <Navigate to="/admin" />} />
+
+          {/* Backward-compat: old admin URLs */}
+          <Route path="/admin/lobby" element={<Navigate to="/admin/rooms" replace />} />
+          <Route path="/admin/game" element={<Navigate to="/admin/rooms" replace />} />
         </Routes>
       </div>
     </div>

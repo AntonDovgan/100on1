@@ -65,7 +65,7 @@ export function AdminRoomListPage() {
   const handleEnterRoom = async (roomId: string) => {
     const result = await joinRoom(roomId);
     if (result.success) {
-      navigate('/admin/lobby');
+      navigate(`/admin/room/${roomId}/lobby`);
     }
   };
 

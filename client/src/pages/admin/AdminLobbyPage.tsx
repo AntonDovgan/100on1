@@ -1,11 +1,12 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
 import { useRoom } from '../../contexts/RoomContext.js';
 import { socket } from '../../socket.js';
 import type { TeamId } from 'shared';
 
 export function AdminLobbyPage() {
+  const { roomId } = useParams<{ roomId: string }>();
   const game = useGame();
   const { leaveRoom, kickPlayer, currentRoomId } = useRoom();
   const navigate = useNavigate();
@@ -13,9 +14,9 @@ export function AdminLobbyPage() {
 
   useEffect(() => {
     if (game.phase !== 'registration' && game.phase !== 'teamReveal') {
-      navigate('/admin/game');
+      navigate(`/admin/room/${roomId}/game`);
     }
-  }, [game.phase, navigate]);
+  }, [game.phase, navigate, roomId]);
 
   const handleShuffle = () => {
     socket.emit('admin:shuffleTeams');

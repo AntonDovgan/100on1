@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
 import { usePlayer } from '../../contexts/PlayerContext.js';
 import { useRoom } from '../../contexts/RoomContext.js';
 
 export function LobbyPage() {
+  const { roomId } = useParams<{ roomId: string }>();
   const game = useGame();
   const { playerName } = usePlayer();
   const { leaveRoom } = useRoom();
@@ -13,9 +14,9 @@ export function LobbyPage() {
 
   useEffect(() => {
     if (game.phase !== 'registration' && game.phase !== 'teamReveal') {
-      navigate('/game');
+      navigate(`/room/${roomId}/game`);
     }
-  }, [game.phase, navigate]);
+  }, [game.phase, navigate, roomId]);
 
   return (
     <div className="flex flex-col items-center min-h-screen px-4 pt-8">

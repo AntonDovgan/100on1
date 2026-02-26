@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
 import { useRoom } from '../../contexts/RoomContext.js';
 import { ScoreDisplay } from '../../components/game/ScoreDisplay.js';
@@ -8,6 +8,7 @@ import { socket } from '../../socket.js';
 import type { TeamId } from 'shared';
 
 export function AdminGamePage() {
+  const { roomId } = useParams<{ roomId: string }>();
   const game = useGame();
   const { leaveRoom } = useRoom();
   const navigate = useNavigate();
@@ -18,9 +19,9 @@ export function AdminGamePage() {
 
   useEffect(() => {
     if (game.phase === 'registration' || game.phase === 'teamReveal') {
-      navigate('/admin/lobby');
+      navigate(`/admin/room/${roomId}/lobby`);
     }
-  }, [game.phase, navigate]);
+  }, [game.phase, navigate, roomId]);
 
   const handleReveal = (answerId: number) => {
     socket.emit('admin:revealAnswer', { answerId });

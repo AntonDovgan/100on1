@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useParams } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
 import { usePlayer } from '../../contexts/PlayerContext.js';
 import { ScoreDisplay } from '../../components/game/ScoreDisplay.js';
@@ -12,6 +12,7 @@ import { socket } from '../../socket.js';
 import type { TeamId } from 'shared';
 
 export function GamePage() {
+  const { roomId } = useParams<{ roomId: string }>();
   const game = useGame();
   const { playerId } = usePlayer();
   const navigate = useNavigate();
@@ -20,9 +21,9 @@ export function GamePage() {
   const [buzzerWinner, setBuzzerWinner] = useState<{ teamId: TeamId; playerName: string } | null>(null);
 
   useEffect(() => {
-    if (game.phase === 'registration') navigate('/lobby');
-    if (game.phase === 'gameOver') navigate('/results');
-  }, [game.phase, navigate]);
+    if (game.phase === 'registration') navigate(`/room/${roomId}/lobby`);
+    if (game.phase === 'gameOver') navigate(`/room/${roomId}/results`);
+  }, [game.phase, navigate, roomId]);
 
   useEffect(() => {
     socket.on('buzzer:won', (data) => setBuzzerWinner(data));

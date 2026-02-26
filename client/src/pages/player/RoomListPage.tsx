@@ -48,7 +48,7 @@ export function RoomListPage() {
     setError('');
     const result = await joinRoom(room.id);
     if (result.success) {
-      navigate('/lobby');
+      navigate(`/room/${room.id}/lobby`);
     } else {
       setError(result.error || 'Не удалось войти в комнату');
       setJoining(null);
@@ -64,7 +64,7 @@ export function RoomListPage() {
     const result = await joinRoom(passwordModal.id, password);
     if (result.success) {
       setPasswordModal(null);
-      navigate('/lobby');
+      navigate(`/room/${passwordModal.id}/lobby`);
     } else {
       setError(result.error || 'Неверный пароль');
       setJoining(null);
