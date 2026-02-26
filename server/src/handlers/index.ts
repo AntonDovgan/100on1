@@ -316,6 +316,7 @@ export function registerHandlers(io: IOServer) {
       if (!adminSockets.has(socket.id)) return;
       const ctx = getRoomContext(socket.id);
       if (!ctx) return;
+      ctx.buzzer.reset();
       const state = ctx.gameState.getState();
       const nextIndex = state.currentRound.roundNumber;
       ctx.gameState.startRound(nextIndex);

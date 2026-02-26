@@ -131,22 +131,42 @@ export function AdminGamePage() {
             {round.roundType === 'bigGame' ? (
               <div className="space-y-4">
                 <p className="text-sm text-gray-500">Выберите 2 игроков от команды «{game.teams[winningTeamId].name}»:</p>
-                <div className="flex gap-4 justify-center flex-wrap">
-                  <select value={bigGamePlayer1} onChange={e => setBigGamePlayer1(e.target.value)}
-                    className="px-4 py-2 rounded-xl border-2 border-primary/30">
-                    <option value="">Игрок 1</option>
+
+                <div className="bg-white/80 rounded-xl p-3 shadow-sm">
+                  <p className="text-xs text-gray-400 mb-2 font-semibold">Игрок 1:</p>
+                  <div className="flex flex-wrap gap-2">
                     {winningTeamPlayers.map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
+                      <button key={p.id} onClick={() => {
+                        setBigGamePlayer1(p.id);
+                        if (bigGamePlayer2 === p.id) setBigGamePlayer2('');
+                      }}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                          bigGamePlayer1 === p.id
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}>
+                        {p.name}
+                      </button>
                     ))}
-                  </select>
-                  <select value={bigGamePlayer2} onChange={e => setBigGamePlayer2(e.target.value)}
-                    className="px-4 py-2 rounded-xl border-2 border-primary/30">
-                    <option value="">Игрок 2</option>
-                    {winningTeamPlayers.filter(p => p.id !== bigGamePlayer1).map(p => (
-                      <option key={p.id} value={p.id}>{p.name}</option>
-                    ))}
-                  </select>
+                  </div>
                 </div>
+
+                <div className="bg-white/80 rounded-xl p-3 shadow-sm">
+                  <p className="text-xs text-gray-400 mb-2 font-semibold">Игрок 2:</p>
+                  <div className="flex flex-wrap gap-2">
+                    {winningTeamPlayers.filter(p => p.id !== bigGamePlayer1).map(p => (
+                      <button key={p.id} onClick={() => setBigGamePlayer2(p.id)}
+                        className={`px-4 py-2 rounded-xl text-sm font-semibold transition-all active:scale-95 ${
+                          bigGamePlayer2 === p.id
+                            ? 'bg-primary text-white shadow-md'
+                            : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                        }`}>
+                        {p.name}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
                 <button onClick={handleStartBigGame}
                   disabled={!bigGamePlayer1 || !bigGamePlayer2}
                   className="px-6 py-3 rounded-xl bg-primary text-white font-semibold hover:bg-primary-dark active:scale-95 disabled:opacity-50 transition-all">
@@ -199,11 +219,15 @@ export function AdminGamePage() {
               <p className="text-center font-semibold text-gray-800">{round.question.text}</p>
             </div>
 
-            {game.phase === 'stealAttempt' && (
-              <div className="text-center mb-3 py-2 px-4 rounded-full bg-gold/20 text-gold-dark font-semibold text-sm">
-                ПЕРЕХВАТ!
-              </div>
-            )}
+            {game.phase === 'stealAttempt' && (() => {
+              const answeringTeam = round.buzzerWinner || 'team1';
+              const stealingTeam: TeamId = answeringTeam === 'team1' ? 'team2' : 'team1';
+              return (
+                <div className="text-center mb-3 py-2 px-4 rounded-xl bg-gold/20 text-gold-dark font-semibold text-sm">
+                  ПЕРЕХВАТ! Команда «{game.teams[stealingTeam].name}» пытается украсть очки
+                </div>
+              );
+            })()}
 
             {/* Strikes indicator */}
             <div className="flex justify-center gap-2 mb-3">
@@ -252,22 +276,36 @@ export function AdminGamePage() {
                     className="px-4 py-2 rounded-xl bg-wrong text-white font-semibold text-sm hover:bg-wrong/80 active:scale-95 transition-all">
                     Штраф ✕
                   </button>
-                  {round.strikes >= 3 && (
-                    <button onClick={handleStartSteal}
-                      className="px-4 py-2 rounded-xl bg-gold text-gray-800 font-semibold text-sm hover:bg-gold-dark active:scale-95 transition-all">
-                      Перехват
-                    </button>
-                  )}
                 </>
               )}
-              <button onClick={() => handleAward('team1')}
-                className="px-4 py-2 rounded-xl bg-team1 text-white font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
-                Очки → {game.teams.team1.name}
-              </button>
-              <button onClick={() => handleAward('team2')}
-                className="px-4 py-2 rounded-xl bg-team2 text-white font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
-                Очки → {game.teams.team2.name}
-              </button>
+
+              {game.phase === 'stealAttempt' ? (() => {
+                const answeringTeam = round.buzzerWinner || 'team1';
+                const stealingTeam: TeamId = answeringTeam === 'team1' ? 'team2' : 'team1';
+                return (
+                  <>
+                    <button onClick={() => handleAward(stealingTeam)}
+                      className="px-4 py-2 rounded-xl bg-correct text-white font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
+                      Перехват удался → {game.teams[stealingTeam].name}
+                    </button>
+                    <button onClick={() => handleAward(answeringTeam)}
+                      className="px-4 py-2 rounded-xl bg-wrong/80 text-white font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
+                      Не удался → {game.teams[answeringTeam].name}
+                    </button>
+                  </>
+                );
+              })() : (
+                <>
+                  <button onClick={() => handleAward('team1')}
+                    className="px-4 py-2 rounded-xl bg-team1 text-white font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
+                    Очки → {game.teams.team1.name}
+                  </button>
+                  <button onClick={() => handleAward('team2')}
+                    className="px-4 py-2 rounded-xl bg-team2 text-white font-semibold text-sm hover:opacity-80 active:scale-95 transition-all">
+                    Очки → {game.teams.team2.name}
+                  </button>
+                </>
+              )}
             </div>
 
             <div className="text-center mt-4">
