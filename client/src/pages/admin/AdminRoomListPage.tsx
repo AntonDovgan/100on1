@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRoom } from '../../contexts/RoomContext.js';
 
@@ -27,6 +27,29 @@ export function AdminRoomListPage() {
   const [error, setError] = useState('');
   const [renamingId, setRenamingId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState('');
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+
+  const getDisplayUrl = useCallback((roomId: string) => {
+    return `${window.location.origin}/display/${roomId}`;
+  }, []);
+
+  const handleCopyLink = useCallback(async (roomId: string) => {
+    try {
+      await navigator.clipboard.writeText(getDisplayUrl(roomId));
+      setCopiedId(roomId);
+      setTimeout(() => setCopiedId((prev) => prev === roomId ? null : prev), 2000);
+    } catch {
+      // Fallback for older browsers
+      const input = document.createElement('input');
+      input.value = getDisplayUrl(roomId);
+      document.body.appendChild(input);
+      input.select();
+      document.execCommand('copy');
+      document.body.removeChild(input);
+      setCopiedId(roomId);
+      setTimeout(() => setCopiedId((prev) => prev === roomId ? null : prev), 2000);
+    }
+  }, [getDisplayUrl]);
 
   useEffect(() => {
     refreshRooms();
@@ -143,8 +166,26 @@ export function AdminRoomListPage() {
                 </span>
               </div>
 
-              <div className="text-sm text-gray-500 mb-3">
+              <div className="text-sm text-gray-500 mb-2">
                 {room.playerCount} {room.playerCount === 1 ? 'игрок' : room.playerCount < 5 ? 'игрока' : 'игроков'}
+              </div>
+
+              {/* Display link */}
+              <div className="flex items-center gap-2 mb-3 bg-gray-50 rounded-xl px-3 py-2">
+                <span className="text-xs text-gray-400 shrink-0">Экран:</span>
+                <span className="text-xs text-primary/70 truncate select-all">
+                  /display/{room.id}
+                </span>
+                <button
+                  onClick={() => handleCopyLink(room.id)}
+                  className={`shrink-0 px-2 py-1 rounded-lg text-xs font-medium transition-all
+                    ${copiedId === room.id
+                      ? 'bg-correct/20 text-correct'
+                      : 'bg-primary/10 text-primary hover:bg-primary/20 active:scale-95'
+                    }`}
+                >
+                  {copiedId === room.id ? 'Скопировано!' : 'Копировать'}
+                </button>
               </div>
 
               <div className="flex gap-2 flex-wrap">
