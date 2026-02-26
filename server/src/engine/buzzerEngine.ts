@@ -1,6 +1,6 @@
 import type { TeamId } from 'shared';
 
-class BuzzerEngine {
+export class BuzzerEngine {
   private isOpen = false;
   private winner: TeamId | null = null;
 
@@ -33,5 +33,3 @@ class BuzzerEngine {
     this.winner = null;
   }
 }
-
-export const buzzerEngine = new BuzzerEngine();

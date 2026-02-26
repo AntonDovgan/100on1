@@ -1,9 +1,13 @@
 import { useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { useGame } from '../../contexts/GameContext.js';
+import { useRoom } from '../../contexts/RoomContext.js';
 
 export function ResultsPage() {
   const game = useGame();
+  const { leaveRoom } = useRoom();
+  const navigate = useNavigate();
   const team1Score = game.teamScores.team1;
   const team2Score = game.teamScores.team2;
   const winnerId = team1Score > team2Score ? 'team1' : team1Score < team2Score ? 'team2' : null;
@@ -73,6 +77,13 @@ export function ResultsPage() {
         <div className="mt-8">
           <p className="text-2xl">💐 С 8 Марта! 💐</p>
           <p className="text-gray-500 mt-2">Спасибо за игру!</p>
+          <button
+            onClick={() => { leaveRoom(); navigate('/rooms'); }}
+            className="mt-4 px-6 py-2 rounded-xl bg-primary/10 text-primary font-semibold
+              hover:bg-primary/20 active:scale-95 transition-all"
+          >
+            К списку комнат
+          </button>
         </div>
       </div>
     </div>

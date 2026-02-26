@@ -7,7 +7,6 @@ import { fileURLToPath } from 'url';
 import { existsSync } from 'fs';
 import { networkInterfaces } from 'os';
 import { config } from './config.js';
-import { gameState } from './state/GameState.js';
 import { registerHandlers } from './handlers/index.js';
 import type { ClientToServerEvents, ServerToClientEvents } from 'shared';
 

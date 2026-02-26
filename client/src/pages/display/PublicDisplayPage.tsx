@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { useParams } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { useGame } from '../../contexts/GameContext.js';
 import { useSound } from '../../contexts/SoundContext.js';
@@ -10,12 +11,23 @@ import { socket } from '../../socket.js';
 import type { TeamId } from 'shared';
 
 export function PublicDisplayPage() {
+  const { roomId } = useParams<{ roomId: string }>();
   const game = useGame();
   const { unlockAudio, isUnlocked } = useSound();
   const round = game.currentRound;
   const roundConfig = ROUND_CONFIG[round.roundType];
   const players = Object.values(game.players);
   const [buzzerWinner, setBuzzerWinner] = useState<{ teamId: TeamId; playerName: string } | null>(null);
+
+  // Join room by roomId from URL
+  useEffect(() => {
+    if (roomId) {
+      socket.emit('room:join', { roomId }, () => {});
+    }
+    return () => {
+      if (roomId) socket.emit('room:leave');
+    };
+  }, [roomId]);
 
   useEffect(() => {
     socket.on('buzzer:won', (data) => setBuzzerWinner(data));

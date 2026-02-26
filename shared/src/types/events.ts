@@ -1,6 +1,7 @@
 import type { TeamId } from './player.js';
 import type { GameState } from './game.js';
 import type { Answer } from './question.js';
+import type { RoomInfo } from './room.js';
 
 export type SoundEffect =
   | 'correct'
@@ -35,6 +36,15 @@ export interface ClientToServerEvents {
   'admin:resetGame': () => void;
 
   'game:requestState': () => void;
+
+  // Room management
+  'room:create': (data: { name: string; password?: string }, callback: (response: { success: boolean; roomId?: string; error?: string }) => void) => void;
+  'room:delete': (data: { roomId: string }) => void;
+  'room:rename': (data: { roomId: string; name: string }) => void;
+  'room:kick': (data: { roomId: string; playerId: string }) => void;
+  'room:list': (callback: (rooms: RoomInfo[]) => void) => void;
+  'room:join': (data: { roomId: string; password?: string }, callback: (response: { success: boolean; error?: string }) => void) => void;
+  'room:leave': () => void;
 }
 
 export interface ServerToClientEvents {
@@ -48,4 +58,8 @@ export interface ServerToClientEvents {
   'timer:expired': () => void;
   'sound:play': (data: { sound: SoundEffect }) => void;
   'error': (data: { message: string }) => void;
+
+  // Room events
+  'room:list': (rooms: RoomInfo[]) => void;
+  'room:kicked': () => void;
 }

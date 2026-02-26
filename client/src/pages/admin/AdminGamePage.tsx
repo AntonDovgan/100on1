@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
+import { useRoom } from '../../contexts/RoomContext.js';
 import { ScoreDisplay } from '../../components/game/ScoreDisplay.js';
 import { ROUND_CONFIG, BIG_GAME_QUESTIONS_COUNT } from 'shared';
 import { socket } from '../../socket.js';
@@ -8,6 +9,7 @@ import type { TeamId } from 'shared';
 
 export function AdminGamePage() {
   const game = useGame();
+  const { leaveRoom } = useRoom();
   const navigate = useNavigate();
   const round = game.currentRound;
   const roundConfig = ROUND_CONFIG[round.roundType];
@@ -77,7 +79,8 @@ export function AdminGamePage() {
   const handleReset = () => {
     if (confirm('Точно сбросить игру? Все данные будут потеряны.')) {
       socket.emit('admin:resetGame');
-      navigate('/admin/lobby');
+      leaveRoom();
+      navigate('/admin/rooms');
     }
   };
 

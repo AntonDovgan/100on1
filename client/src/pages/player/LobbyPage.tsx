@@ -2,10 +2,12 @@ import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
 import { usePlayer } from '../../contexts/PlayerContext.js';
+import { useRoom } from '../../contexts/RoomContext.js';
 
 export function LobbyPage() {
   const game = useGame();
   const { playerName } = usePlayer();
+  const { leaveRoom } = useRoom();
   const navigate = useNavigate();
   const players = Object.values(game.players);
 
@@ -87,6 +89,13 @@ export function LobbyPage() {
           <p className="text-center text-sm text-gray-400 mt-4">Ожидание начала игры...</p>
         </div>
       )}
+
+      <button
+        onClick={() => { leaveRoom(); navigate('/rooms'); }}
+        className="mt-6 text-sm text-gray-400 hover:text-gray-600 transition-colors"
+      >
+        Покинуть комнату
+      </button>
     </div>
   );
 }

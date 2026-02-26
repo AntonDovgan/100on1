@@ -22,11 +22,12 @@ Real-time multiplayer browser game inspired by the TV show "Family Feud" (Russia
 ## Features
 
 - **Real-time multiplayer** — 20+ players connect simultaneously via WebSockets
+- **Room system** — admin creates named rooms (with optional passwords); multiple games run in parallel
 - **Mobile-first** — optimized for phones (players) and tablets/laptops (admin)
 - **Admin as arbiter** — answers are spoken aloud; the host judges correctness
 - **5 game rounds** — Simple, Double, Triple, Reverse, and Big Game
 - **Sound effects** — buzzer, correct/wrong, applause, timer (8 sound effects)
-- **Public display** — fullscreen spectator view for projector/TV (`/display`)
+- **Public display** — fullscreen spectator view for projector/TV (`/display/:roomId`)
 - **Auto-reconnection** — players rejoin seamlessly via `localStorage` session persistence
 - **Festive 8 March theme** — pink/gold/purple palette with animated flower petals and confetti
 - **Server-authoritative** — timers and buzzer resolution run on the server to prevent cheating
@@ -71,7 +72,7 @@ pnpm dev
 
 - Players: `http://localhost:5173`
 - Admin panel: `http://localhost:5173/admin`
-- Public display (TV/projector): `http://localhost:5173/display`
+- Public display (TV/projector): `http://localhost:5173/display/<roomId>` (room ID shown after creating a room)
 
 ### Production
 
@@ -100,20 +101,22 @@ This builds the client, starts the server, and creates a public tunnel. Share th
 
 | Role | Access | Description |
 |------|--------|-------------|
-| **Player** | Open the game link | Joins by entering a name — no registration or passwords |
-| **Admin (Host)** | `/admin` route | Controls the game flow from a separate device |
-| **Public Display** | `/display` route | Spectator view for a projector/TV — shows game progress to everyone |
+| **Player** | Open the game link | Enters a name, selects a room from the list, plays |
+| **Admin (Host)** | `/admin` route | Creates rooms, manages players, controls the game flow |
+| **Public Display** | `/display/:roomId` route | Spectator view for a projector/TV — shows a specific room's game |
 
 > **Default admin password:** `admin8march` (change via `ADMIN_PASSWORD` env var before the event).
 
 ### Game Flow
 
 ```
-Registration → Team Assignment → Round 1 (x1) → Round 2 (x2) → Round 3 (x3) → Round 4 (Reverse) → Round 5 (Big Game) → Results
+Name Entry → Room Selection → Registration → Team Assignment → Round 1 (x1) → Round 2 (x2) → Round 3 (x3) → Round 4 (Reverse) → Round 5 (Big Game) → Results
 ```
 
-1. **Registration** — players open the link and enter their names
-2. **Team Assignment** — admin shuffles players into two teams ("Тюльпаны" and "Розы"), with manual adjustment available
+1. **Name Entry** — players open the link and enter their names
+2. **Room Selection** — players see a list of available rooms and join one (entering password if required)
+3. **Registration** — admin and players wait in a room lobby for everyone to join
+4. **Team Assignment** — admin shuffles players into two teams ("Тюльпаны" and "Розы"), with manual adjustment available
 3. **Rounds 1–3** — standard rounds with increasing multipliers
 4. **Round 4** — reverse round
 5. **Round 5** — Big Game finale
@@ -177,8 +180,9 @@ The admin panel provides context-sensitive controls for each game phase:
 
 | Phase | Controls |
 |-------|---------|
-| Registration | View connected players, wait for everyone to join |
-| Team Assignment | Shuffle teams, move individual players between teams, confirm |
+| Room Management | Create/delete/rename rooms, set optional passwords, enter rooms |
+| Registration | View connected players, kick players, wait for everyone to join |
+| Team Assignment | Shuffle teams, move individual players between teams, kick players, confirm |
 | Buzzer Race | Open buzzer for both teams |
 | Team Answering | Reveal specific answers by number, mark strikes |
 | Steal Attempt | Start steal, award round to winning team |
@@ -208,17 +212,17 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 - **Admin as arbiter**: answers are spoken aloud at the party — the server does NOT validate answers automatically. The admin hears the answer and presses "Reveal" or "Strike".
 - **Server-authoritative timers**: Big Game countdown runs on the server to prevent client-side manipulation.
 - **First-tap-wins buzzer**: server resolves buzzer race using timestamps with a mutex-like flag to prevent race conditions.
-- **Singleton state**: `GameState` class is a singleton with change listeners; every mutation triggers a broadcast to all connected clients.
-- **JSON persistence**: game state is periodically saved to a JSON file for crash recovery.
+- **Room-based architecture**: `RoomManager` creates isolated `GameStateManager` + `BuzzerEngine` + `TimerEngine` per room. Multiple games can run in parallel.
+- **JSON persistence**: game state is saved per-room to `roomstates/<roomId>.json` for crash recovery.
 
 ### Socket.IO Rooms
 
 | Room | Members |
 |------|---------|
-| `players` | All registered players |
+| `lobby` | Players and admins not yet in a game room |
+| `room:<id>` | All participants (players, admin, display) in a specific game room |
 | `team1` | Team "Тюльпаны" members |
 | `team2` | Team "Розы" members |
-| `admin` | Admin panel |
 
 ## Project Structure
 
@@ -234,7 +238,8 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 │       │   ├── game.ts         # GameState, GamePhase, RoundState, BigGameState
 │       │   ├── player.ts       # Player, Team, TeamId
 │       │   ├── question.ts     # Question, Answer, BigGameQuestion
-│       │   └── events.ts       # ClientToServerEvents, ServerToClientEvents, SoundEffect
+│       │   ├── events.ts       # ClientToServerEvents, ServerToClientEvents, SoundEffect
+│       │   └── room.ts         # RoomInfo (room list data)
 │       └── constants/
 │           └── game.ts         # ROUND_CONFIG, MAX_STRIKES, REVERSE_POINTS, timers
 ├── server/                     # Node.js backend
@@ -242,10 +247,11 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 │       ├── index.ts            # Express + Socket.IO bootstrap, serves client/dist
 │       ├── config.ts           # Port, admin password, CORS config
 │       ├── state/
-│       │   ├── GameState.ts    # Central state manager (singleton)
-│       │   └── persistence.ts  # JSON file backup/restore
+│       │   ├── GameState.ts    # Game state manager (per-room instance)
+│       │   ├── RoomManager.ts  # Room registry (create/delete/join/leave rooms)
+│       │   └── persistence.ts  # Per-room JSON file backup
 │       ├── handlers/
-│       │   └── index.ts        # All Socket.IO event handlers (19 client→server events)
+│       │   └── index.ts        # All Socket.IO event handlers (26 client→server events)
 │       ├── engine/
 │       │   ├── buzzerEngine.ts # First-tap-wins resolution
 │       │   ├── timerEngine.ts  # Server-authoritative countdown
@@ -256,24 +262,27 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 ├── client/                     # React frontend
 │   └── src/
 │       ├── main.tsx            # React entry point
-│       ├── App.tsx             # Router (8 routes)
+│       ├── App.tsx             # Router (10 routes)
 │       ├── socket.ts           # Socket.IO client singleton
 │       ├── contexts/
-│       │   ├── GameContext.tsx  # Game state provider (listens to game:state)
+│       │   ├── GameContext.tsx  # Game state provider (room-aware)
 │       │   ├── PlayerContext.tsx # Player identity + localStorage persistence
+│       │   ├── RoomContext.tsx  # Room management (join/leave/create/delete)
 │       │   └── SoundContext.tsx # Howler.js manager + iOS audio unlock
 │       ├── pages/
 │       │   ├── player/
 │       │   │   ├── JoinPage.tsx      # Name input
+│       │   │   ├── RoomListPage.tsx  # Room selection (with password modal)
 │       │   │   ├── LobbyPage.tsx     # Waiting room
 │       │   │   ├── GamePage.tsx      # Main game view (all phases)
 │       │   │   └── ResultsPage.tsx   # Final scores + confetti
 │       │   ├── display/
-│       │   │   └── PublicDisplayPage.tsx # Big-screen spectator view
+│       │   │   └── PublicDisplayPage.tsx # Big-screen spectator view (per room)
 │       │   └── admin/
-│       │       ├── AdminLoginPage.tsx  # Password entry
-│       │       ├── AdminLobbyPage.tsx  # Team management
-│       │       └── AdminGamePage.tsx   # Game control panel
+│       │       ├── AdminLoginPage.tsx     # Password entry
+│       │       ├── AdminRoomListPage.tsx  # Room management (create/delete/rename)
+│       │       ├── AdminLobbyPage.tsx     # Team management + player kick
+│       │       └── AdminGamePage.tsx      # Game control panel
 │       ├── components/
 │       │   ├── game/
 │       │   │   ├── AnswerBoard.tsx    # Answer grid with flip-reveal
@@ -375,7 +384,7 @@ The server serves the built client from `client/dist` on a single port.
 | Player disconnected | The game auto-reconnects. If the player's name disappears, they can rejoin with the same name |
 | "Connection error" on phone | Ensure the phone is on the same Wi-Fi network as the server, or use `pnpm tunnel` for internet access |
 | Admin panel not loading | Navigate to `/admin` and enter the password (default: `admin8march`) |
-| Game state lost after server restart | The state is saved to a JSON file periodically. Restart the server — it will attempt to restore the last saved state |
+| Game state lost after server restart | Rooms are ephemeral — recreate rooms after server restart. Per-room state is saved to `roomstates/` for reference |
 | Buzzer not responding | Admin must press "Open Buzzer" to enable the buzzer race for the current round |
 | Cloudflare tunnel not working | Ensure `cloudflared` is installed (`brew install cloudflared`) and port 3001 is not blocked |
 

@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react';
 import type { GameState } from 'shared';
 import { socket } from '../socket.js';
+import { useRoom } from './RoomContext.js';
 
 const initialState: GameState = {
   phase: 'registration',
@@ -29,13 +30,18 @@ const GameContext = createContext<GameState>(initialState);
 
 export function GameProvider({ children }: { children: ReactNode }) {
   const [state, setState] = useState<GameState>(initialState);
+  const { currentRoomId } = useRoom();
 
   useEffect(() => {
     socket.on('game:state', setState);
-    // Request current state in case we missed the initial emit (race condition)
-    socket.emit('game:requestState');
+    // Only request state if we're in a room
+    if (currentRoomId) {
+      socket.emit('game:requestState');
+    } else {
+      setState(initialState);
+    }
     return () => { socket.off('game:state', setState); };
-  }, []);
+  }, [currentRoomId]);
 
   return <GameContext.Provider value={state}>{children}</GameContext.Provider>;
 }

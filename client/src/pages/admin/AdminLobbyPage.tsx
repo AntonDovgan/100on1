@@ -1,11 +1,13 @@
 import { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGame } from '../../contexts/GameContext.js';
+import { useRoom } from '../../contexts/RoomContext.js';
 import { socket } from '../../socket.js';
 import type { TeamId } from 'shared';
 
 export function AdminLobbyPage() {
   const game = useGame();
+  const { leaveRoom, kickPlayer, currentRoomId } = useRoom();
   const navigate = useNavigate();
   const players = Object.values(game.players);
 
@@ -45,7 +47,15 @@ export function AdminLobbyPage() {
   return (
     <div className="min-h-screen px-4 pt-4 pb-8">
       <div className="text-center mb-4">
-        <h1 className="text-2xl font-bold text-primary">Админ-панель</h1>
+        <div className="flex items-center justify-center gap-3">
+          <h1 className="text-2xl font-bold text-primary">Админ-панель</h1>
+          <button
+            onClick={() => { leaveRoom(); navigate('/admin/rooms'); }}
+            className="text-xs px-3 py-1 rounded-lg bg-gray-200 text-gray-600 hover:bg-gray-300 transition-all"
+          >
+            К комнатам
+          </button>
+        </div>
         <p className="text-sm text-gray-500">Игроков: {players.length} | Онлайн: {players.filter(p => p.isConnected).length}</p>
       </div>
 
@@ -82,9 +92,18 @@ export function AdminLobbyPage() {
           <h3 className="font-semibold text-gray-600 mb-2">Зарегистрированные игроки:</h3>
           <div className="space-y-1">
             {players.map((p) => (
-              <div key={p.id} className="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-50">
-                <span className={`w-2 h-2 rounded-full ${p.isConnected ? 'bg-correct' : 'bg-wrong'}`} />
-                <span className="font-medium">{p.name}</span>
+              <div key={p.id} className="flex items-center justify-between px-3 py-2 rounded-lg bg-gray-50">
+                <div className="flex items-center gap-2">
+                  <span className={`w-2 h-2 rounded-full ${p.isConnected ? 'bg-correct' : 'bg-wrong'}`} />
+                  <span className="font-medium">{p.name}</span>
+                </div>
+                <button
+                  onClick={() => { if (currentRoomId && confirm(`Удалить ${p.name} из игры?`)) kickPlayer(currentRoomId, p.id); }}
+                  className="text-xs px-2 py-0.5 rounded bg-wrong/10 text-wrong hover:bg-wrong/20"
+                  title="Удалить из игры"
+                >
+                  ✕
+                </button>
               </div>
             ))}
             {players.length === 0 && (
@@ -121,13 +140,22 @@ export function AdminLobbyPage() {
                           <span className={`w-2 h-2 rounded-full ${p.isConnected ? 'bg-correct' : 'bg-wrong'}`} />
                           <span>{p.name}</span>
                         </div>
-                        <button
-                          onClick={() => movePlayer(pid, otherTeamId)}
-                          className="text-xs px-2 py-0.5 rounded bg-gray-200 hover:bg-gray-300"
-                          title={`Переместить в ${game.teams[otherTeamId].name}`}
-                        >
-                          →
-                        </button>
+                        <div className="flex gap-1">
+                          <button
+                            onClick={() => movePlayer(pid, otherTeamId)}
+                            className="text-xs px-2 py-0.5 rounded bg-gray-200 hover:bg-gray-300"
+                            title={`Переместить в ${game.teams[otherTeamId].name}`}
+                          >
+                            →
+                          </button>
+                          <button
+                            onClick={() => { if (currentRoomId && confirm(`Удалить ${p.name}?`)) kickPlayer(currentRoomId, pid); }}
+                            className="text-xs px-2 py-0.5 rounded bg-wrong/10 text-wrong hover:bg-wrong/20"
+                            title="Удалить из игры"
+                          >
+                            ✕
+                          </button>
+                        </div>
                       </div>
                     );
                   })}

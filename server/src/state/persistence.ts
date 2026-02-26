@@ -1,14 +1,16 @@
-import { writeFileSync } from 'fs';
+import { writeFileSync, mkdirSync } from 'fs';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import type { GameState } from 'shared';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const STATE_FILE = join(__dirname, '../../gamestate.json');
+const STATE_DIR = join(__dirname, '../../roomstates');
 
-export function persist(state: GameState) {
+try { mkdirSync(STATE_DIR, { recursive: true }); } catch { /* ignore */ }
+
+export function persist(roomId: string, state: GameState) {
   try {
-    writeFileSync(STATE_FILE, JSON.stringify(state, null, 2));
+    writeFileSync(join(STATE_DIR, `${roomId}.json`), JSON.stringify(state, null, 2));
   } catch {
     // Silently ignore persistence errors
   }

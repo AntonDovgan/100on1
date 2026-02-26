@@ -1,7 +1,7 @@
-import type { GameState, GamePhase, RoundState, BigGameState } from 'shared';
-import type { TeamId, Player, Team } from 'shared';
+import type { GameState, GamePhase, RoundState } from 'shared';
+import type { TeamId, Player } from 'shared';
 import { ROUND_SEQUENCE, TEAM_NAMES } from 'shared';
-import { loadQuestions, type QuestionsData } from '../data/loadQuestions.js';
+import type { QuestionsData } from '../data/loadQuestions.js';
 import { persist } from './persistence.js';
 
 function createInitialRound(): RoundState {
@@ -33,14 +33,16 @@ function createInitialState(): GameState {
   };
 }
 
-class GameStateManager {
+export class GameStateManager {
   private state: GameState;
   private questions: QuestionsData;
   private listeners: Array<(state: GameState) => void> = [];
+  private roomId: string;
 
-  constructor() {
+  constructor(questions: QuestionsData, roomId: string) {
     this.state = createInitialState();
-    this.questions = loadQuestions();
+    this.questions = questions;
+    this.roomId = roomId;
   }
 
   getState(): GameState {
@@ -59,7 +61,7 @@ class GameStateManager {
   }
 
   private notify() {
-    persist(this.state);
+    persist(this.roomId, this.state);
     for (const listener of this.listeners) {
       listener(this.state);
     }
@@ -256,5 +258,3 @@ class GameStateManager {
     this.notify();
   }
 }
-
-export const gameState = new GameStateManager();
