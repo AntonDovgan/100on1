@@ -6,14 +6,14 @@ import { useSound } from '../../contexts/SoundContext.js';
 import type { RoomInfo } from 'shared';
 
 const phaseLabels: Record<string, string> = {
-  registration: 'Ожидание',
+  registration: 'Ожидание игроков',
   teamReveal: 'Команды',
-  roundIntro: 'Игра',
-  buzzerRace: 'Игра',
-  teamAnswering: 'Игра',
-  stealAttempt: 'Игра',
-  reverseAnswering: 'Игра',
-  roundResult: 'Игра',
+  roundIntro: 'Идёт игра',
+  buzzerRace: 'Идёт игра',
+  teamAnswering: 'Идёт игра',
+  stealAttempt: 'Идёт игра',
+  reverseAnswering: 'Идёт игра',
+  roundResult: 'Идёт игра',
   bigGamePlayer1: 'Большая игра',
   bigGamePlayer2: 'Большая игра',
   bigGameReveal: 'Большая игра',
@@ -75,7 +75,7 @@ export function RoomListPage() {
     <div className="flex flex-col items-center min-h-screen px-4 pt-8">
       <div className="text-center mb-6 animate-fade-in">
         <h1 className="text-3xl font-bold text-primary">100 к 1</h1>
-        <p className="text-purple mt-1">Привет, {playerName}! 💐</p>
+        <p className="text-purple mt-1">Привет, {playerName}!</p>
       </div>
 
       <div className="w-full max-w-sm animate-fade-in">
@@ -89,15 +89,11 @@ export function RoomListPage() {
         ) : (
           <div className="space-y-3">
             {rooms.map((room) => (
-              <button
+              <div
                 key={room.id}
-                onClick={() => handleJoin(room)}
-                disabled={joining !== null}
-                className="w-full bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg text-left
-                  hover:bg-white/95 active:scale-[0.98] transition-all
-                  disabled:opacity-50 disabled:cursor-not-allowed"
+                className="bg-white/80 backdrop-blur-sm rounded-2xl p-4 shadow-lg"
               >
-                <div className="flex items-center justify-between">
+                <div className="flex items-center justify-between mb-2">
                   <div className="flex items-center gap-2">
                     {room.hasPassword && <span className="text-lg">🔒</span>}
                     <span className="font-bold text-primary text-lg">{room.name}</span>
@@ -106,13 +102,19 @@ export function RoomListPage() {
                     {phaseLabels[room.phase] || room.phase}
                   </span>
                 </div>
-                <div className="mt-1 text-sm text-gray-500">
+                <div className="text-sm text-gray-500 mb-3">
                   {room.playerCount} {room.playerCount === 1 ? 'игрок' : room.playerCount < 5 ? 'игрока' : 'игроков'}
                 </div>
-                {joining === room.id && (
-                  <div className="mt-2 text-sm text-primary">Подключение...</div>
-                )}
-              </button>
+                <button
+                  onClick={() => handleJoin(room)}
+                  disabled={joining !== null}
+                  className="w-full py-3 rounded-xl bg-primary text-white font-bold text-lg
+                    hover:bg-primary-dark active:scale-[0.97] transition-all
+                    disabled:opacity-50 disabled:cursor-not-allowed shadow-md"
+                >
+                  {joining === room.id ? 'Подключение...' : 'Войти'}
+                </button>
+              </div>
             ))}
           </div>
         )}

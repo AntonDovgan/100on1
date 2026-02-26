@@ -130,8 +130,10 @@ export function registerHandlers(io: IOServer) {
         return;
       }
 
+      const isAdmin = adminSockets.has(socket.id);
+
       // Check name uniqueness within room (for players, not admins)
-      if (playerId) {
+      if (playerId && !isAdmin) {
         const name = playerNames.get(playerId);
         const existing = Object.values(room.gameState.getState().players).find(
           p => p.name.toLowerCase() === name?.toLowerCase() && p.id !== playerId
@@ -146,7 +148,7 @@ export function registerHandlers(io: IOServer) {
       const prevRoomId = roomManager.getRoomIdForSocket(socket.id);
       if (prevRoomId) {
         const prevRoom = roomManager.getRoom(prevRoomId);
-        if (prevRoom && playerId) {
+        if (prevRoom && playerId && !isAdmin) {
           prevRoom.gameState.updatePlayer(playerId, { isConnected: false });
         }
         socket.leave(`room:${prevRoomId}`);
@@ -158,8 +160,8 @@ export function registerHandlers(io: IOServer) {
       roomManager.joinRoom(socket.id, data.roomId);
       socket.join(`room:${data.roomId}`);
 
-      // If this is a player, add to room's game state
-      if (playerId) {
+      // If this is a player (not admin), add to room's game state
+      if (playerId && !isAdmin) {
         const name = playerNames.get(playerId) ?? '';
         playerRooms.set(playerId, data.roomId);
 
@@ -177,7 +179,7 @@ export function registerHandlers(io: IOServer) {
       }
 
       // If admin, mark connected
-      if (adminSockets.has(socket.id)) {
+      if (isAdmin) {
         room.gameState.setAdminConnected(true);
       }
 
@@ -188,6 +190,7 @@ export function registerHandlers(io: IOServer) {
 
     socket.on('room:leave', () => {
       const playerId = socketToPlayer.get(socket.id);
+      const isAdmin = adminSockets.has(socket.id);
       const roomId = roomManager.getRoomIdForSocket(socket.id);
 
       if (roomId) {
@@ -195,13 +198,13 @@ export function registerHandlers(io: IOServer) {
         roomManager.leaveRoom(socket.id);
 
         const room = roomManager.getRoom(roomId);
-        if (playerId && room) {
+        if (playerId && !isAdmin && room) {
           room.gameState.updatePlayer(playerId, { isConnected: false });
           playerRooms.delete(playerId); // Prevent auto-rejoin on reconnect
         }
 
         // Check if any admin still in this room
-        if (adminSockets.has(socket.id) && room) {
+        if (isAdmin && room) {
           const anyAdminInRoom = Array.from(adminSockets).some(
             sid => roomManager.getRoomIdForSocket(sid) === roomId && sid !== socket.id
           );
@@ -499,9 +502,10 @@ export function registerHandlers(io: IOServer) {
     // --- Disconnect ---
     socket.on('disconnect', () => {
       const playerId = socketToPlayer.get(socket.id);
+      const isAdmin = adminSockets.has(socket.id);
       const roomId = roomManager.getRoomIdForSocket(socket.id);
 
-      if (roomId && playerId) {
+      if (roomId && playerId && !isAdmin) {
         const room = roomManager.getRoom(roomId);
         if (room) {
           room.gameState.updatePlayer(playerId, { isConnected: false });
@@ -513,7 +517,7 @@ export function registerHandlers(io: IOServer) {
         socketToPlayer.delete(socket.id);
       }
 
-      if (adminSockets.has(socket.id)) {
+      if (isAdmin) {
         adminSockets.delete(socket.id);
         if (roomId) {
           const room = roomManager.getRoom(roomId);
