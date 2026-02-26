@@ -7,6 +7,7 @@ import { ResultsPage } from './pages/player/ResultsPage.js';
 import { AdminLoginPage } from './pages/admin/AdminLoginPage.js';
 import { AdminLobbyPage } from './pages/admin/AdminLobbyPage.js';
 import { AdminGamePage } from './pages/admin/AdminGamePage.js';
+import { PublicDisplayPage } from './pages/display/PublicDisplayPage.js';
 import { FestiveBackground } from './components/layout/FestiveBackground.js';
 
 export function App() {
@@ -22,6 +23,9 @@ export function App() {
           <Route path="/lobby" element={playerId ? <LobbyPage /> : <Navigate to="/" />} />
           <Route path="/game" element={playerId ? <GamePage /> : <Navigate to="/" />} />
           <Route path="/results" element={<ResultsPage />} />
+
+          {/* Public display (projector/TV) */}
+          <Route path="/display" element={<PublicDisplayPage />} />
 
           {/* Admin routes */}
           <Route path="/admin" element={isAdmin ? <Navigate to="/admin/lobby" /> : <AdminLoginPage />} />
