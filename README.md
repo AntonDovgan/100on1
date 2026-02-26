@@ -26,6 +26,7 @@ Real-time multiplayer browser game inspired by the TV show "Family Feud" (Russia
 - **Admin as arbiter** — answers are spoken aloud; the host judges correctness
 - **5 game rounds** — Simple, Double, Triple, Reverse, and Big Game
 - **Sound effects** — buzzer, correct/wrong, applause, timer (8 sound effects)
+- **Public display** — fullscreen spectator view for projector/TV (`/display`)
 - **Auto-reconnection** — players rejoin seamlessly via `localStorage` session persistence
 - **Festive 8 March theme** — pink/gold/purple palette with animated flower petals and confetti
 - **Server-authoritative** — timers and buzzer resolution run on the server to prevent cheating
@@ -70,6 +71,7 @@ pnpm dev
 
 - Players: `http://localhost:5173`
 - Admin panel: `http://localhost:5173/admin`
+- Public display (TV/projector): `http://localhost:5173/display`
 
 ### Production
 
@@ -100,6 +102,7 @@ This builds the client, starts the server, and creates a public tunnel. Share th
 |------|--------|-------------|
 | **Player** | Open the game link | Joins by entering a name — no registration or passwords |
 | **Admin (Host)** | `/admin` route | Controls the game flow from a separate device |
+| **Public Display** | `/display` route | Spectator view for a projector/TV — shows game progress to everyone |
 
 > **Default admin password:** `admin8march` (change via `ADMIN_PASSWORD` env var before the event).
 
@@ -253,7 +256,7 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 ├── client/                     # React frontend
 │   └── src/
 │       ├── main.tsx            # React entry point
-│       ├── App.tsx             # Router (7 routes)
+│       ├── App.tsx             # Router (8 routes)
 │       ├── socket.ts           # Socket.IO client singleton
 │       ├── contexts/
 │       │   ├── GameContext.tsx  # Game state provider (listens to game:state)
@@ -265,6 +268,8 @@ Round 5:  bigGamePlayer1 ──► bigGamePlayer2 ──► bigGameReveal ──
 │       │   │   ├── LobbyPage.tsx     # Waiting room
 │       │   │   ├── GamePage.tsx      # Main game view (all phases)
 │       │   │   └── ResultsPage.tsx   # Final scores + confetti
+│       │   ├── display/
+│       │   │   └── PublicDisplayPage.tsx # Big-screen spectator view
 │       │   └── admin/
 │       │       ├── AdminLoginPage.tsx  # Password entry
 │       │       ├── AdminLobbyPage.tsx  # Team management

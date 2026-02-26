@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import confetti from 'canvas-confetti';
 import { useGame } from '../../contexts/GameContext.js';
+import { useSound } from '../../contexts/SoundContext.js';
 import { AnswerBoard } from '../../components/game/AnswerBoard.js';
 import { StrikeDisplay } from '../../components/game/StrikeDisplay.js';
 import { Countdown } from '../../components/game/Countdown.js';
@@ -10,6 +11,7 @@ import type { TeamId } from 'shared';
 
 export function PublicDisplayPage() {
   const game = useGame();
+  const { unlockAudio, isUnlocked } = useSound();
   const round = game.currentRound;
   const roundConfig = ROUND_CONFIG[round.roundType];
   const players = Object.values(game.players);
@@ -42,7 +44,17 @@ export function PublicDisplayPage() {
   const stealTeamId = round.activeTeamId === 'team1' ? 'team2' : 'team1';
 
   return (
-    <div className="flex flex-col min-h-screen px-8 py-6">
+    <div className="flex flex-col min-h-screen px-8 py-6" onClick={() => { if (!isUnlocked) unlockAudio(); }}>
+      {/* Audio unlock overlay for iOS */}
+      {!isUnlocked && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm cursor-pointer">
+          <div className="bg-white rounded-2xl p-8 shadow-2xl text-center">
+            <p className="text-2xl mb-2">🔊</p>
+            <p className="text-xl font-bold text-gray-700">Нажмите для включения звука</p>
+          </div>
+        </div>
+      )}
+
       {/* Header — always visible */}
       <div className="flex items-center justify-between mb-6">
         <div>
@@ -62,7 +74,7 @@ export function PublicDisplayPage() {
       </div>
 
       {/* Scores — visible during game */}
-      {game.phase !== 'registration' && game.phase !== 'gameOver' && (
+      {game.phase !== 'registration' && game.phase !== 'teamReveal' && game.phase !== 'gameOver' && (
         <div className="flex gap-6 mb-6 justify-center">
           {(['team1', 'team2'] as const).map((teamId) => {
             const team = game.teams[teamId];
@@ -182,8 +194,10 @@ export function PublicDisplayPage() {
             </div>
 
             {game.phase === 'stealAttempt' && (
-              <div className="text-center mb-4 py-3 px-6 rounded-full bg-gold/20 text-gold-dark font-bold text-2xl inline-block mx-auto">
-                ПЕРЕХВАТ! {game.teams[stealTeamId].name} отвечает!
+              <div className="flex justify-center mb-4">
+                <div className="py-3 px-6 rounded-full bg-gold/20 text-gold-dark font-bold text-2xl">
+                  ПЕРЕХВАТ! {game.teams[stealTeamId].name} отвечает!
+                </div>
               </div>
             )}
 
